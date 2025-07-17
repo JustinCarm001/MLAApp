@@ -4,23 +4,37 @@
 
 ### 1. Setup Development Environment
 
+**For Local Development (SQLite - Recommended):**
 ```bash
-# Clone repository and navigate to backend
-cd /path/to/MLAApp/backend
+# Clone repository and navigate to project root
+cd /path/to/MLAApp
 
-# Copy environment template
-cp .env.example .env
+# Create virtual environment
+python -m venv venv
 
-# Edit .env file with your configuration
-nano .env
+# Activate virtual environment
+# On macOS/Linux:
+source venv/bin/activate
+# On Windows:
+venv\Scripts\activate
 
+# Install Python dependencies (SQLite version)
+pip install -r backend/requirements-local.txt
+
+# Navigate to backend directory
+cd backend
+
+# Start development server
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+**For Production Development (PostgreSQL):**
+```bash
 # Start services with Docker Compose
-cd ..
 docker-compose up -d postgres redis
 
-# Install Python dependencies
-cd backend
-pip install -r requirements.txt
+# Install Python dependencies (PostgreSQL version)
+pip install -r backend/requirements.txt
 
 # Run database migrations
 alembic upgrade head
@@ -34,8 +48,21 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 - **API Documentation**: http://localhost:8000/docs
 - **Alternative Docs**: http://localhost:8000/redoc
 - **Health Check**: http://localhost:8000/health
-- **Database Admin**: http://localhost:5050 (PgAdmin)
-- **Task Monitor**: http://localhost:5555 (Flower)
+- **Database Admin**: http://localhost:5050 (PgAdmin - PostgreSQL only)
+- **Task Monitor**: http://localhost:5555 (Flower - PostgreSQL only)
+
+### 3. Database Configuration
+
+**SQLite (Local Development):**
+- Database file: `backend/hockey_live.db`
+- Created automatically on first run
+- No additional setup required
+- Engine configured in `app/core/database.py` with SQLite optimizations
+
+**PostgreSQL (Production):**
+- Requires Docker Compose setup
+- Connection pooling enabled
+- Alembic migrations supported
 
 ## Development Commands
 
@@ -114,6 +141,54 @@ mypy app/
 
 # Run all quality checks
 black app/ tests/ && isort app/ tests/ && flake8 app/ tests/ && mypy app/
+```
+
+## V1.0 Implementation Notes
+
+### Database Setup Changes
+
+**SQLite Configuration:**
+- Added `redirect_slashes=False` to FastAPI app configuration
+- SQLite engine configured with proper connection parameters
+- Database tables created automatically on startup
+- Foreign key relationships fixed (UUID consistency)
+
+**Model Relationship Fixes:**
+- Fixed User.id (UUID) to Team.created_by (UUID) relationship
+- Fixed TeamMembership.user_id to use UUID instead of Integer
+- Added proper ForeignKey constraints and back_populates
+
+### API Endpoint Fixes
+
+**Route Configuration:**
+- Added duplicate route handlers for `/teams` and `/teams/` paths
+- Fixed 307 redirect issues with POST requests
+- Proper status codes (201 for created resources)
+
+**CORS Configuration:**
+- Mobile app IP ranges added to CORS origins
+- Proper headers configuration for mobile requests
+
+### Common Development Issues (V1.0)
+
+**Database Schema Mismatches:**
+```bash
+# Problem: Old database with incompatible schema
+# Solution: Delete old database file
+rm backend/hockey_live.db
+# Server will create new database with correct schema
+```
+
+**Foreign Key Errors:**
+```bash
+# Problem: UUID/Integer type mismatches in relationships
+# Solution: Fixed in V1.0 - all foreign keys use consistent UUID types
+```
+
+**Team Creation Timeouts:**
+```bash
+# Problem: 307 redirect causing mobile app timeouts
+# Solution: Added redirect_slashes=False and duplicate route handlers
 ```
 
 ### Docker Development

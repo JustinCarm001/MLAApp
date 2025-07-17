@@ -24,7 +24,8 @@ app = FastAPI(
     version=settings.PROJECT_VERSION,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    redirect_slashes=False
 )
 
 # Security middleware

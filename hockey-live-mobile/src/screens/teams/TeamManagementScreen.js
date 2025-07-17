@@ -142,7 +142,7 @@ const TeamManagementScreen = ({ navigation }) => {
       >
         {loading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#1B365D" />
+            <ActivityIndicator size={24} color="#1B365D" />
             <Text style={styles.loadingText}>Loading your teams...</Text>
           </View>
         ) : teams.length === 0 ? (

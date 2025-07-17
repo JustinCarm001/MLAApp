@@ -250,7 +250,7 @@ const TeamDetailScreen = ({ navigation, route }) => {
 
           {playersLoading && (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#1B365D" />
+              <ActivityIndicator size={24} color="#1B365D" />
               <Text style={styles.loadingText}>Loading players...</Text>
             </View>
           )}

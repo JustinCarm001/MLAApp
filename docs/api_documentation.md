@@ -1,8 +1,8 @@
-# API Documentation - Hockey Live App
+# API Documentation - Hockey Live App V1.0
 
 ## Overview
 
-The Hockey Live App API provides endpoints for managing hockey game sessions, multi-camera coordination, video processing, and user management. All endpoints use JSON for request/response data and require authentication where noted.
+The Hockey Live App API provides endpoints for user authentication, team management, and user profile management. This documentation covers the V1.0 implementation with working endpoints.
 
 ## Base URL
 
@@ -19,675 +19,443 @@ Most endpoints require JWT authentication. Include the token in the Authorizatio
 Authorization: Bearer <your_jwt_token>
 ```
 
-## Game Management API
+## API Endpoints
 
-### Create Game Session
+### Health Check
 
-**POST** `/games/create`
+**GET** `/health`
 
-Creates a new hockey game session and returns a join code for parents.
-
-**Request:**
-```json
-{
-  "game_info": {
-    "home_team": "Lightning U16",
-    "away_team": "Thunder U16",
-    "date": "2024-01-15",
-    "time": "19:00",
-    "arena": "City Ice Arena",
-    "arena_type": "standard"
-  },
-  "organizer": {
-    "name": "Coach Johnson",
-    "email": "coach@lightning.com",
-    "phone": "+1234567890"
-  },
-  "max_cameras": 6,
-  "expected_duration": 60
-}
-```
+Check API health status (no authentication required).
 
 **Response:**
 ```json
 {
-  "success": true,
-  "game_id": "game_123456",
-  "join_code": "H7K9M2",
-  "qr_code": "data:image/png;base64,iVBOR...",
-  "expires_at": "2024-01-15T21:00:00Z",
-  "camera_positions": [
-    {
-      "position": "goal_line_1",
-      "assigned": false,
-      "priority": 1
-    },
-    {
-      "position": "goal_line_2",
-      "assigned": false,
-      "priority": 1
-    }
-  ]
+  "status": "healthy",
+  "service": "Hockey Live App API",
+  "version": "1.0.0",
+  "timestamp": 1752788052.1776607
 }
 ```
 
-### Join Game Session
+### Authentication Endpoints
 
-**POST** `/games/join`
-
-Allows a parent to join an existing game session.
-
-**Request:**
-```json
-{
-  "game_code": "H7K9M2",
-  "parent_info": {
-    "name": "Sarah Johnson",
-    "email": "sarah@email.com",
-    "phone": "+1234567890"
-  },
-  "device_info": {
-    "platform": "ios",
-    "model": "iPhone 14",
-    "app_version": "1.0.0"
-  }
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "game_id": "game_123456",
-  "parent_id": "parent_789",
-  "assigned_position": {
-    "position_name": "goal_line_1",
-    "coordinates": {"x": 11, "y": 42.5},
-    "priority": 1,
-    "setup_instructions": [
-      "Position yourself directly behind the goal line",
-      "Center yourself between the goal posts",
-      "Hold phone horizontally in landscape mode"
-    ]
-  },
-  "camera_settings": {
-    "resolution": "1080p",
-    "frame_rate": 60,
-    "orientation": "landscape"
-  },
-  "sync_config": {
-    "master_timestamp": "2024-01-15T19:00:00.000Z",
-    "sync_tolerance_ms": 100,
-    "heartbeat_interval": 5000
-  }
-}
-```
-
-### Game Status
-
-**GET** `/games/{game_id}/status`
-
-Gets current status of a game session.
-
-**Response:**
-```json
-{
-  "success": true,
-  "game_id": "game_123456",
-  "status": "recording",
-  "participants": [
-    {
-      "parent_id": "parent_789",
-      "name": "Sarah Johnson",
-      "position": "goal_line_1",
-      "connection_status": "connected",
-      "recording_status": "active"
-    }
-  ],
-  "recording_info": {
-    "started_at": "2024-01-15T19:00:00Z",
-    "duration": "00:15:30",
-    "estimated_end": "2024-01-15T20:00:00Z"
-  }
-}
-```
-
-### Leave Game Session
-
-**POST** `/games/leave`
-
-Removes a parent from a game session.
-
-**Request:**
-```json
-{
-  "game_id": "game_123456",
-  "parent_id": "parent_789"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Successfully left game session",
-  "position_released": "goal_line_1"
-}
-```
-
-## Streaming API
-
-### Upload Stream
-
-**POST** `/stream/upload`
-
-Uploads video stream data during recording.
-
-**Request:**
-```json
-{
-  "game_id": "game_123456",
-  "camera_id": "camera_abc123",
-  "position": "goal_line_1",
-  "timestamp": "2024-01-15T19:05:30.123Z",
-  "chunk_sequence": 150,
-  "video_data": "<base64_encoded_video_chunk>"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "chunk_received": true,
-  "next_sequence": 151,
-  "sync_offset": 0,
-  "quality_score": 0.95
-}
-```
-
-### Sync Request
-
-**POST** `/stream/sync/request`
-
-Requests synchronization with other cameras.
-
-**Request:**
-```json
-{
-  "game_id": "game_123456",
-  "camera_id": "camera_abc123",
-  "local_timestamp": "2024-01-15T19:00:00.000Z"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "master_timestamp": "2024-01-15T19:00:00.000Z",
-  "countdown_ms": 3000,
-  "sync_offset": 0,
-  "participating_cameras": 4
-}
-```
-
-### Stream Status
-
-**GET** `/stream/{stream_id}/status`
-
-Gets status of a video stream.
-
-**Response:**
-```json
-{
-  "success": true,
-  "stream_id": "stream_xyz789",
-  "status": "uploading",
-  "chunks_received": 450,
-  "total_duration": "00:15:30",
-  "upload_speed": "2.5 Mbps",
-  "quality_metrics": {
-    "resolution": "1080p",
-    "frame_rate": 60,
-    "bitrate": "8000 kbps",
-    "dropped_frames": 2
-  }
-}
-```
-
-## Arena Configuration API
-
-### Get Arena Configurations
-
-**GET** `/arena/configurations`
-
-Returns available arena configurations.
-
-**Response:**
-```json
-{
-  "success": true,
-  "configurations": [
-    {
-      "type": "standard",
-      "name": "Standard North American",
-      "dimensions": {"length": 200, "width": 85},
-      "positions": 6,
-      "description": "Standard 200x85 ft rink"
-    },
-    {
-      "type": "olympic",
-      "name": "Olympic/International",
-      "dimensions": {"length": 197, "width": 98.4},
-      "positions": 6,
-      "description": "International standard rink"
-    }
-  ]
-}
-```
-
-### Get Arena Positions
-
-**GET** `/arena/{arena_type}/positions`
-
-Returns optimal camera positions for an arena type.
-
-**Response:**
-```json
-{
-  "success": true,
-  "arena_type": "standard",
-  "positions": [
-    {
-      "position_name": "goal_line_1",
-      "coordinates": {"x": 11, "y": 42.5},
-      "angle": 0,
-      "priority": 1,
-      "coverage_area": "goal_crease_and_slot",
-      "setup_instructions": [
-        "Position yourself directly behind the goal line",
-        "Center yourself between the goal posts"
-      ]
-    }
-  ]
-}
-```
-
-### Validate Position
-
-**POST** `/arena/validate-position`
-
-Validates if a camera is positioned correctly.
-
-**Request:**
-```json
-{
-  "arena_type": "standard",
-  "expected_position": "goal_line_1",
-  "camera_feed": {
-    "frame_data": "<base64_encoded_frame>",
-    "timestamp": "2024-01-15T19:00:00.000Z"
-  }
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "validation": {
-    "position_accuracy": 0.92,
-    "angle_correctness": 0.88,
-    "coverage_quality": 0.95,
-    "stability": 0.90,
-    "overall_score": 0.91
-  },
-  "feedback": [
-    "Position is excellent",
-    "Slight angle adjustment needed",
-    "Coverage area is optimal"
-  ]
-}
-```
-
-## Video Processing API
-
-### Compile Video
-
-**POST** `/videos/compile`
-
-Initiates video compilation from multiple streams.
-
-**Request:**
-```json
-{
-  "game_id": "game_123456",
-  "compilation_settings": {
-    "quality": "1080p",
-    "format": "mp4",
-    "include_audio": true,
-    "switching_algorithm": "puck_based"
-  },
-  "delivery_options": {
-    "notify_parents": true,
-    "create_highlights": true,
-    "generate_thumbnails": true
-  }
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "compilation_id": "comp_456789",
-  "estimated_completion": "2024-01-15T20:15:00Z",
-  "processing_queue_position": 2,
-  "notification_methods": ["push", "email"]
-}
-```
-
-### Video Status
-
-**GET** `/videos/{video_id}/status`
-
-Gets processing status of a video.
-
-**Response:**
-```json
-{
-  "success": true,
-  "video_id": "video_789123",
-  "status": "processing",
-  "progress": 65,
-  "current_stage": "camera_switching",
-  "estimated_completion": "2024-01-15T20:15:00Z",
-  "file_info": {
-    "duration": "01:02:30",
-    "size_mb": 2500,
-    "format": "mp4",
-    "resolution": "1080p"
-  }
-}
-```
-
-### Download Video
-
-**GET** `/videos/{video_id}/download`
-
-Provides download link for completed video.
-
-**Response:**
-```json
-{
-  "success": true,
-  "video_id": "video_789123",
-  "download_url": "https://cdn.hockeylive.app/videos/video_789123.mp4",
-  "expires_at": "2024-01-16T20:00:00Z",
-  "file_info": {
-    "duration": "01:02:30",
-    "size_mb": 2500,
-    "format": "mp4",
-    "resolution": "1080p"
-  },
-  "sharing_options": {
-    "family_link": "https://hockeylive.app/share/fam_123",
-    "public_link": "https://hockeylive.app/watch/video_789123"
-  }
-}
-```
-
-## User Management API
-
-### Register User
-
-**POST** `/auth/register`
-
-Registers a new user account.
-
-**Request:**
-```json
-{
-  "email": "parent@email.com",
-  "password": "secure_password123",
-  "name": "Sarah Johnson",
-  "phone": "+1234567890",
-  "user_type": "parent"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "user_id": "user_123456",
-  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
-  "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
-  "expires_in": 3600
-}
-```
-
-### Login
+#### User Login
 
 **POST** `/auth/login`
 
-Authenticates a user and returns tokens.
+Authenticate user and receive JWT token.
 
 **Request:**
 ```json
 {
-  "email": "parent@email.com",
-  "password": "secure_password123"
+  "email": "jccarm10@gmail.com",
+  "password": "Justin10"
 }
 ```
 
 **Response:**
 ```json
 {
-  "success": true,
-  "user_id": "user_123456",
-  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
-  "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
-  "expires_in": 3600,
-  "user_info": {
-    "name": "Sarah Johnson",
-    "email": "parent@email.com",
-    "user_type": "parent"
+  "user": {
+    "id": "a9298809-1a05-47f7-82d3-d1c6e25a980e",
+    "email": "jccarm10@gmail.com",
+    "full_name": "Justin Carm"
+  },
+  "access_token": "r1b33dafqH4TFTZ_mdruaksfEgDZsYY_-vMnT5VtXBo",
+  "token_type": "bearer"
+}
+```
+
+#### User Logout
+
+**POST** `/auth/logout`
+
+Invalidate current JWT token.
+
+**Headers:**
+```http
+Authorization: Bearer <your_jwt_token>
+```
+
+**Response:**
+```json
+{
+  "message": "Successfully logged out"
+}
+```
+
+#### User Registration
+
+**POST** `/auth/register`
+
+Register a new user account.
+
+**Request:**
+```json
+{
+  "email": "newuser@example.com",
+  "password": "SecurePassword123",
+  "full_name": "New User"
+}
+```
+
+**Response:**
+```json
+{
+  "user": {
+    "id": "uuid-string",
+    "email": "newuser@example.com",
+    "full_name": "New User"
+  },
+  "access_token": "jwt-token-string",
+  "token_type": "bearer"
+}
+```
+
+### User Management Endpoints
+
+#### Get Current User Profile
+
+**GET** `/users/me`
+
+Get current authenticated user's profile.
+
+**Headers:**
+```http
+Authorization: Bearer <your_jwt_token>
+```
+
+**Response:**
+```json
+{
+  "id": "a9298809-1a05-47f7-82d3-d1c6e25a980e",
+  "email": "jccarm10@gmail.com",
+  "full_name": "Justin Carm",
+  "is_active": true
+}
+```
+
+#### Update User Profile
+
+**PUT** `/users/me`
+
+Update current user's profile information.
+
+**Headers:**
+```http
+Authorization: Bearer <your_jwt_token>
+```
+
+**Request:**
+```json
+{
+  "full_name": "Updated Name",
+  "phone": "1234567890"
+}
+```
+
+**Response:**
+```json
+{
+  "id": "a9298809-1a05-47f7-82d3-d1c6e25a980e",
+  "email": "jccarm10@gmail.com",
+  "full_name": "Updated Name",
+  "phone": "1234567890",
+  "is_active": true
+}
+```
+
+### Team Management Endpoints
+
+#### Create Team
+
+**POST** `/teams`
+
+Create a new hockey team.
+
+**Headers:**
+```http
+Authorization: Bearer <your_jwt_token>
+```
+
+**Request:**
+```json
+{
+  "name": "Justin Slashers",
+  "league": "CAHL",
+  "age_group": "U18",
+  "season": "2024-2025",
+  "home_arena": "Carstairs Memorial",
+  "arena_address": "123 Arena St, Carstairs, AB",
+  "primary_color": "#1B365D",
+  "secondary_color": "#FFFFFF",
+  "head_coach_name": "Justin Carm",
+  "coach_email": "jccarm10@gmail.com",
+  "coach_phone": "3688870382"
+}
+```
+
+**Response:**
+```json
+{
+  "message": "Team created successfully",
+  "team": {
+    "id": "team_1",
+    "name": "Justin Slashers",
+    "league": "CAHL",
+    "age_group": "U18",
+    "season": "2024-2025",
+    "home_arena": "Carstairs Memorial",
+    "arena_address": "123 Arena St, Carstairs, AB",
+    "primary_color": "#1B365D",
+    "secondary_color": "#FFFFFF",
+    "head_coach_name": "Justin Carm",
+    "coach_email": "jccarm10@gmail.com",
+    "coach_phone": "3688870382",
+    "team_code": "ABC123",
+    "created_by": "jccarm10@gmail.com",
+    "created_at": 1752788052.1776607,
+    "players": [],
+    "role": "creator"
   }
 }
 ```
 
-### User Profile
+#### Get User's Teams
 
-**GET** `/users/profile`
+**GET** `/teams/my-teams`
 
-Gets user profile information.
+Get all teams associated with the current user.
 
 **Headers:**
-```
-Authorization: Bearer <access_token>
+```http
+Authorization: Bearer <your_jwt_token>
 ```
 
 **Response:**
 ```json
 {
-  "success": true,
-  "user_id": "user_123456",
-  "profile": {
-    "name": "Sarah Johnson",
-    "email": "parent@email.com",
-    "phone": "+1234567890",
-    "user_type": "parent",
-    "subscription": {
-      "tier": "premium",
-      "status": "active",
-      "expires_at": "2024-02-15T00:00:00Z"
-    },
-    "game_history": [
-      {
-        "game_id": "game_123456",
-        "date": "2024-01-15",
-        "teams": "Lightning vs Thunder",
-        "role": "camera_operator"
-      }
-    ]
+  "teams": [
+    {
+      "id": "team_1",
+      "name": "Justin Slashers",
+      "league": "CAHL",
+      "age_group": "U18",
+      "season": "2024-2025",
+      "home_arena": "Carstairs Memorial",
+      "team_code": "ABC123",
+      "created_by": "jccarm10@gmail.com",
+      "role": "creator",
+      "players": []
+    }
+  ]
+}
+```
+
+#### Join Team
+
+**POST** `/teams/join`
+
+Join an existing team using a 6-digit team code.
+
+**Headers:**
+```http
+Authorization: Bearer <your_jwt_token>
+```
+
+**Request:**
+```json
+{
+  "team_code": "ABC123"
+}
+```
+
+**Response:**
+```json
+{
+  "message": "Successfully joined team",
+  "team": {
+    "id": "team_1",
+    "name": "Justin Slashers",
+    "league": "CAHL",
+    "age_group": "U18",
+    "team_code": "ABC123",
+    "role": "member"
   }
 }
 ```
 
 ## Error Handling
 
-All API endpoints return consistent error responses:
+All endpoints return consistent error responses:
 
+**400 Bad Request:**
 ```json
 {
-  "success": false,
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Invalid game code format",
-    "details": {
-      "field": "game_code",
-      "expected": "6 alphanumeric characters",
-      "received": "H7K9M"
-    }
+  "error": "validation_error",
+  "message": "Invalid request data",
+  "details": {
+    "field": "email",
+    "error": "Invalid email format"
   }
 }
 ```
 
-### Common Error Codes
+**401 Unauthorized:**
+```json
+{
+  "error": "unauthorized",
+  "message": "Authentication required",
+  "details": null
+}
+```
 
-- `VALIDATION_ERROR`: Invalid request data
-- `AUTHENTICATION_ERROR`: Invalid or missing authentication
-- `AUTHORIZATION_ERROR`: Insufficient permissions
-- `NOT_FOUND`: Resource not found
-- `RATE_LIMIT_EXCEEDED`: Too many requests
-- `INTERNAL_ERROR`: Server error
-- `GAME_FULL`: Maximum cameras reached
-- `GAME_EXPIRED`: Game session expired
-- `SYNC_FAILED`: Camera synchronization failed
+**403 Forbidden:**
+```json
+{
+  "error": "forbidden", 
+  "message": "Insufficient permissions",
+  "details": null
+}
+```
+
+**404 Not Found:**
+```json
+{
+  "error": "not_found",
+  "message": "Resource not found",
+  "details": null
+}
+```
+
+**500 Internal Server Error:**
+```json
+{
+  "error": "internal_error",
+  "message": "An internal server error occurred",
+  "details": null
+}
+```
 
 ## Rate Limiting
 
-API requests are rate-limited to prevent abuse:
+- **Authentication endpoints**: 10 requests per minute per IP
+- **Team management**: 30 requests per minute per user
+- **User management**: 60 requests per minute per user
 
-- **Authentication endpoints**: 5 requests per minute
-- **Game management**: 10 requests per minute
-- **Streaming endpoints**: 1000 requests per minute
-- **General endpoints**: 100 requests per minute
+## Database Schema
 
-Rate limit headers are included in responses:
-
-```
-X-RateLimit-Limit: 100
-X-RateLimit-Remaining: 95
-X-RateLimit-Reset: 1642694400
-```
-
-## Webhooks
-
-The API supports webhooks for real-time notifications:
-
-### Game Events
-
-```json
+### User Model
+```python
 {
-  "event": "game.started",
-  "game_id": "game_123456",
-  "timestamp": "2024-01-15T19:00:00Z",
-  "data": {
-    "participants": 4,
-    "estimated_duration": 60
-  }
+  "id": "UUID",
+  "email": "string",
+  "hashed_password": "string",
+  "full_name": "string",
+  "first_name": "string",
+  "last_name": "string", 
+  "phone": "string",
+  "role": "string",
+  "is_active": "boolean",
+  "is_verified": "boolean",
+  "created_at": "datetime",
+  "updated_at": "datetime"
 }
 ```
 
-### Video Processing Events
-
-```json
+### Team Model
+```python
 {
-  "event": "video.completed",
-  "video_id": "video_789123",
-  "timestamp": "2024-01-15T20:15:00Z",
-  "data": {
-    "download_url": "https://cdn.hockeylive.app/videos/video_789123.mp4",
-    "duration": "01:02:30",
-    "size_mb": 2500
-  }
+  "id": "integer",
+  "name": "string",
+  "team_code": "string",
+  "league": "string",
+  "age_group": "string",
+  "season": "string",
+  "home_arena": "string",
+  "arena_address": "string",
+  "primary_color": "string",
+  "secondary_color": "string",
+  "head_coach_name": "string",
+  "coach_email": "string",
+  "coach_phone": "string",
+  "created_by": "UUID",
+  "created_at": "datetime",
+  "updated_at": "datetime"
 }
 ```
 
-## SDK Examples
+### TeamMembership Model
+```python
+{
+  "id": "integer",
+  "team_id": "integer",
+  "user_id": "UUID",
+  "role": "string",
+  "player_id": "integer",
+  "is_active": "boolean",
+  "approved": "boolean",
+  "joined_at": "datetime"
+}
+```
 
-### JavaScript/TypeScript
+## Interactive Documentation
 
-```typescript
-import { HockeyLiveAPI } from 'hockey-live-sdk';
+Visit the interactive API documentation at:
+- **Swagger UI**: `http://localhost:8000/docs`
+- **ReDoc**: `http://localhost:8000/redoc`
 
-const api = new HockeyLiveAPI({
-  baseURL: 'https://api.hockeylive.app/api/v1',
-  apiKey: 'your_api_key'
+## SDK and Client Libraries
+
+### JavaScript/React Native
+```javascript
+import HockeyLiveAPI from 'hockey-live-api';
+
+const api = new HockeyLiveAPI('http://localhost:8000/api/v1');
+
+// Login
+const { user, access_token } = await api.auth.login({
+  email: 'user@example.com',
+  password: 'password'
 });
 
-// Join a game
-const gameSession = await api.games.join({
-  gameCode: 'H7K9M2',
-  parentInfo: {
-    name: 'Sarah Johnson',
-    email: 'sarah@email.com'
-  }
-});
+// Set token for authenticated requests
+api.setAuthToken(access_token);
 
-// Start streaming
-const stream = await api.streaming.upload({
-  gameId: gameSession.game_id,
-  cameraId: 'camera_123',
-  position: gameSession.assigned_position.position_name
+// Create team
+const team = await api.teams.create({
+  name: 'My Team',
+  league: 'CAHL',
+  age_group: 'U18'
 });
 ```
 
 ### Python
-
 ```python
-from hockey_live_sdk import HockeyLiveAPI
+import requests
 
-api = HockeyLiveAPI(
-    base_url='https://api.hockeylive.app/api/v1',
-    api_key='your_api_key'
-)
-
-# Create game session
-game = api.games.create({
-    'game_info': {
-        'home_team': 'Lightning U16',
-        'away_team': 'Thunder U16',
-        'arena_type': 'standard'
-    }
-})
-
-# Get arena positions
-positions = api.arena.get_positions('standard')
+class HockeyLiveAPI:
+    def __init__(self, base_url):
+        self.base_url = base_url
+        self.session = requests.Session()
+    
+    def login(self, email, password):
+        response = self.session.post(
+            f"{self.base_url}/auth/login",
+            json={"email": email, "password": password}
+        )
+        data = response.json()
+        self.session.headers.update({
+            "Authorization": f"Bearer {data['access_token']}"
+        })
+        return data
+    
+    def create_team(self, team_data):
+        response = self.session.post(
+            f"{self.base_url}/teams",
+            json=team_data
+        )
+        return response.json()
 ```
 
-## Testing
-
-### Test Environment
-
-```
-Base URL: https://api-test.hockeylive.app/api/v1
-```
-
-### Sample Test Data
-
-```json
-{
-  "test_game_code": "TEST01",
-  "test_user": {
-    "email": "test@hockeylive.app",
-    "password": "test123"
-  },
-  "test_arena": "standard"
-}
-```
-
-This API documentation provides comprehensive coverage of all endpoints needed for the Hockey Live App, with examples and error handling to support development and integration.
+This documentation covers the current working V1.0 API endpoints with real examples and response formats.

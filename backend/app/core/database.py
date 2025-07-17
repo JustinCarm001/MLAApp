@@ -15,13 +15,21 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 # Create database engine
-engine = create_engine(
-    settings.DATABASE_URL,
-    pool_size=settings.DATABASE_POOL_SIZE,
-    max_overflow=settings.DATABASE_MAX_OVERFLOW,
-    pool_pre_ping=True,
-    echo=settings.DEBUG  # Log SQL queries in debug mode
-)
+if settings.DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(
+        settings.DATABASE_URL,
+        poolclass=StaticPool,
+        connect_args={"check_same_thread": False},
+        echo=settings.DEBUG  # Log SQL queries in debug mode
+    )
+else:
+    engine = create_engine(
+        settings.DATABASE_URL,
+        pool_size=settings.DATABASE_POOL_SIZE,
+        max_overflow=settings.DATABASE_MAX_OVERFLOW,
+        pool_pre_ping=True,
+        echo=settings.DEBUG  # Log SQL queries in debug mode
+    )
 
 # Create test engine for testing
 test_engine = None
@@ -84,6 +92,9 @@ def get_test_db() -> Generator[Session, None, None]:
 def create_tables():
     """Create all database tables."""
     try:
+        # Import models to register them with SQLAlchemy
+        from app.models import User, UserToken, Team, Player, TeamMembership
+        
         Base.metadata.create_all(bind=engine)
         logger.info("Database tables created successfully")
     except Exception as e:

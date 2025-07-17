@@ -77,7 +77,8 @@ async def get_my_teams(
     print(f"✅ Found {len(user_teams)} teams for user")
     return {"teams": user_teams}
 
-@router.post("/")
+@router.post("/", status_code=201)
+@router.post("", status_code=201)
 async def create_team(
     team_data: TeamCreate,
     current_user: User = Depends(get_current_active_user),
@@ -87,43 +88,50 @@ async def create_team(
     print(f"🏒 Creating team: {team_data.name} for user: {current_user.email}")
     print(f"📋 Team data: {team_data.dict()}")
     
-    # Generate team ID and code
-    team_id = f"team_{len(teams_db) + 1}"
-    team_code = ''.join(secrets.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') for _ in range(6))
-    
-    # Create team with all fields
-    new_team = {
-        "id": team_id,
-        "name": team_data.name,
-        "league": team_data.league,
-        "age_group": team_data.age_group,
-        "season": team_data.season,
-        "home_arena": team_data.home_arena,
-        "arena_address": team_data.arena_address,
-        "primary_color": team_data.primary_color,
-        "secondary_color": team_data.secondary_color,
-        "head_coach_name": team_data.head_coach_name,
-        "coach_email": team_data.coach_email,
-        "coach_phone": team_data.coach_phone,
-        "team_code": team_code,
-        "created_by": current_user.email,
-        "created_at": time.time(),
-        "players": []
-    }
-    
-    teams_db[team_id] = new_team
-    team_members_db[team_id] = [current_user.email]  # Creator is automatically a member
-    
-    # Return team with role
-    response_team = new_team.copy()
-    response_team["role"] = "creator"
-    
-    print(f"✅ Team created successfully: {new_team['name']} (Code: {team_code})")
-    
-    return {
-        "message": "Team created successfully",
-        "team": response_team
-    }
+    try:
+        # Generate team ID and code
+        team_id = f"team_{len(teams_db) + 1}"
+        team_code = ''.join(secrets.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') for _ in range(6))
+        
+        # Create team with all fields
+        new_team = {
+            "id": team_id,
+            "name": team_data.name,
+            "league": team_data.league,
+            "age_group": team_data.age_group,
+            "season": team_data.season,
+            "home_arena": team_data.home_arena,
+            "arena_address": team_data.arena_address,
+            "primary_color": team_data.primary_color,
+            "secondary_color": team_data.secondary_color,
+            "head_coach_name": team_data.head_coach_name,
+            "coach_email": team_data.coach_email,
+            "coach_phone": team_data.coach_phone,
+            "team_code": team_code,
+            "created_by": current_user.email,
+            "created_at": time.time(),
+            "players": []
+        }
+        
+        teams_db[team_id] = new_team
+        team_members_db[team_id] = [current_user.email]  # Creator is automatically a member
+        
+        # Return team with role
+        response_team = new_team.copy()
+        response_team["role"] = "creator"
+        
+        print(f"✅ Team created successfully: {new_team['name']} (Code: {team_code})")
+        
+        return {
+            "message": "Team created successfully",
+            "team": response_team
+        }
+    except Exception as e:
+        print(f"❌ Error creating team: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error creating team: {str(e)}"
+        )
 
 @router.post("/join")
 async def join_team(

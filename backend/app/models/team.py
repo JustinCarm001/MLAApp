@@ -2,7 +2,8 @@
 Team model for hockey team management.
 """
 
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.core.database import Base
@@ -28,7 +29,7 @@ class Team(Base):
     logo_url = Column(String(255))
     
     # Team management
-    created_by = Column(Integer, nullable=False)  # User ID who created the team
+    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)  # User ID who created the team
     head_coach_name = Column(String(100))
     coach_email = Column(String(255))
     coach_phone = Column(String(20))
@@ -42,6 +43,7 @@ class Team(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationships
+    creator = relationship("User", back_populates="created_teams")
     players = relationship("Player", back_populates="team", cascade="all, delete-orphan")
     memberships = relationship("TeamMembership", back_populates="team", cascade="all, delete-orphan")
 
@@ -52,7 +54,7 @@ class Player(Base):
     __tablename__ = "players"
     
     id = Column(Integer, primary_key=True, index=True)
-    team_id = Column(Integer, nullable=False, index=True)
+    team_id = Column(Integer, ForeignKey("teams.id"), nullable=False, index=True)
     
     # Player basic info
     first_name = Column(String(50), nullable=False)
@@ -93,8 +95,8 @@ class TeamMembership(Base):
     __tablename__ = "team_memberships"
     
     id = Column(Integer, primary_key=True, index=True)
-    team_id = Column(Integer, nullable=False, index=True)
-    user_id = Column(Integer, nullable=False, index=True)
+    team_id = Column(Integer, ForeignKey("teams.id"), nullable=False, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     
     # Membership details
     role = Column(String(20), default="parent")  # owner, coach, parent, viewer
@@ -107,3 +109,4 @@ class TeamMembership(Base):
     
     # Relationships
     team = relationship("Team", back_populates="memberships")
+    user = relationship("User", back_populates="team_memberships")

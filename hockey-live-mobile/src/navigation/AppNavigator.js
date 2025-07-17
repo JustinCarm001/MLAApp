@@ -52,7 +52,7 @@ const MainTabs = () => {
         options={{
           tabBarLabel: 'Home',
           tabBarIcon: ({ color, size }) => (
-            <Text style={{ color, fontSize: size }}>🏠</Text>
+            <Text style={{ color, fontSize: typeof size === 'number' ? size : 20 }}>🏠</Text>
           ),
         }}
       />
@@ -63,7 +63,7 @@ const MainTabs = () => {
         options={{
           tabBarLabel: 'Teams',
           tabBarIcon: ({ color, size }) => (
-            <Text style={{ color, fontSize: size }}>🏒</Text>
+            <Text style={{ color, fontSize: typeof size === 'number' ? size : 20 }}>🏒</Text>
           ),
         }}
       />
@@ -74,7 +74,7 @@ const MainTabs = () => {
         options={{
           tabBarLabel: 'Profile',
           tabBarIcon: ({ color, size }) => (
-            <Text style={{ color, fontSize: size }}>👤</Text>
+            <Text style={{ color, fontSize: typeof size === 'number' ? size : 20 }}>👤</Text>
           ),
         }}
       />
@@ -157,11 +157,24 @@ const AppNavigator = () => {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator 
+        screenOptions={{ 
+          headerShown: false,
+          cardStyle: { backgroundColor: '#F5F7FA' }
+        }}
+      >
         {isAuthenticated ? (
-          <Stack.Screen name="App" component={AppStack} />
+          <Stack.Screen 
+            name="App" 
+            component={AppStack} 
+            options={{ animationEnabled: false }}
+          />
         ) : (
-          <Stack.Screen name="Auth" component={AuthStack} />
+          <Stack.Screen 
+            name="Auth" 
+            component={AuthStack} 
+            options={{ animationEnabled: false }}
+          />
         )}
       </Stack.Navigator>
     </NavigationContainer>

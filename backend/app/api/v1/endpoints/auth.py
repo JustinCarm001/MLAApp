@@ -43,7 +43,7 @@ def generate_token() -> str:
     """Generate a secure random token."""
     return secrets.token_urlsafe(32)
 
-@router.post("/register", response_model=dict)
+@router.post("/register", response_model=LoginResponse)
 async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     """User registration endpoint."""
     print(f"Registration attempt for: {user_data.email}")
@@ -75,17 +75,30 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_user)
     
+    # Generate token for auto-login after registration
+    token = generate_token()
+    
+    # Store token in database
+    db_token = UserToken(
+        token=token,
+        user_id=db_user.id,
+        user_email=db_user.email
+    )
+    db.add(db_token)
+    db.commit()
+    
     print(f"SUCCESS: User registered successfully: {user_data.email}")
     print(f"User ID: {db_user.id}")
+    print(f"Generated token: {token[:10]}...")
     
-    return {
-        "message": "User registered successfully",
-        "user": {
-            "id": str(db_user.id),
-            "email": db_user.email,
-            "full_name": db_user.full_name
-        }
-    }
+    return LoginResponse(
+        user=User(
+            id=str(db_user.id),
+            email=db_user.email,
+            full_name=db_user.full_name
+        ),
+        access_token=token
+    )
 
 @router.post("/login", response_model=LoginResponse)
 async def login(login_data: UserLogin, db: Session = Depends(get_db)):
@@ -146,9 +159,14 @@ async def refresh_token():
     """Token refresh endpoint."""
     return {"message": "Token refresh endpoint - to be implemented"}
 
+class LogoutRequest(BaseModel):
+    token: str
+
 @router.post("/logout")
-async def logout(token: str = None, db: Session = Depends(get_db)):
+async def logout(logout_data: LogoutRequest, db: Session = Depends(get_db)):
     """User logout endpoint - invalidates the provided token."""
+    token = logout_data.token
+    
     if not token:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
