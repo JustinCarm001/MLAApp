@@ -1,0 +1,46 @@
+export const APP_SETTINGS = {
+  app: {
+    name: "HockeyLiveApp",
+    display_name: "Hockey Live",
+    description: "Multi-camera hockey game streaming and compilation app",
+    version: "1.0.0"
+  },
+  ui: {
+    items_per_page: 10,
+    auto_refresh_interval: 30000,
+    theme: "light",
+    language: "en",
+    enable_dark_mode: true
+  },
+  mobile_specific: {
+    enable_push_notifications: true,
+    offline_mode: true,
+    biometric_auth: true,
+    camera_permissions: true,
+    location_permissions: true,
+    multi_camera_sync: true,
+    arena_positioning: true,
+    real_time_streaming: true
+  },
+  validation: {
+    email_regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    phone_regex: /^\+?[1-9]\d{1,14}$/,
+    password_min_length: 8,
+    max_file_size_mb: 100,
+    allowed_video_formats: ['mp4', 'mov', 'avi', 'mkv']
+  },
+  limits: {
+    max_video_duration_minutes: 90,
+    max_uploads_per_day: 3,
+    max_storage_gb: 10
+  },
+  hockey_specific: {
+    max_cameras_per_game: 6,
+    min_cameras_per_game: 2,
+    game_duration_minutes: 60,
+    sync_tolerance_ms: 100,
+    arena_types: ['standard', 'olympic', 'junior', 'custom'],
+    supported_leagues: ['U16', 'U18', 'Junior', 'Senior'],
+    camera_positions: ['goal_line_1', 'goal_line_2', 'center_ice', 'bench_side', 'penalty_box', 'corner_cam']
+  }
+};

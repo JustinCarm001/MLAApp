@@ -1,0 +1,107 @@
+// mobile/src/config/theme_config.js
+export const THEME_CONFIG = {
+  colors: {
+    // Light theme
+    light: {
+      primary: "#007AFF",
+      secondary: "#5856D6",
+      success: "#34C759",
+      error: "#FF3B30",
+      warning: "#FF9500",
+      background: "#FFFFFF",
+      surface: "#F2F2F7",
+      text_primary: "#000000",
+      text_secondary: "#8E8E93",
+      border: "#C7C7CC",
+      placeholder: "#C7C7CC",
+      overlay: "rgba(0,0,0,0.5)"
+    },
+    // Dark theme
+    dark: {
+      primary: "#0A84FF",
+      secondary: "#5E5CE6",
+      success: "#30D158",
+      error: "#FF453A",
+      warning: "#FF9F0A",
+      background: "#000000",
+      surface: "#1C1C1E",
+      text_primary: "#FFFFFF",
+      text_secondary: "#8E8E93",
+      border: "#38383A",
+      placeholder: "#8E8E93",
+      overlay: "rgba(255,255,255,0.1)"
+    }
+  },
+  typography: {
+    font_family: {
+      ios: "-apple-system, BlinkMacSystemFont",
+      android: "Roboto, sans-serif",
+      web: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+    },
+    sizes: {
+      large_title: 34,
+      title_1: 28,
+      title_2: 22,
+      title_3: 20,
+      headline: 17,
+      body: 17,
+      callout: 16,
+      subhead: 15,
+      footnote: 13,
+      caption: 12
+    },
+    weights: {
+      regular: '400',
+      medium: '500',
+      semibold: '600',
+      bold: '700'
+    },
+    line_height: 1.3
+  },
+  spacing: {
+    xs: 4,
+    sm: 8,
+    md: 16,
+    lg: 24,
+    xl: 32,
+    xxl: 48
+  },
+  border_radius: {
+    small: 4,
+    medium: 8,
+    large: 12,
+    extra_large: 16,
+    round: 999
+  },
+  shadows: {
+    small: "0 2px 8px rgba(0,0,0,0.1)",
+    medium: "0 4px 16px rgba(0,0,0,0.1)",
+    large: "0 8px 32px rgba(0,0,0,0.15)"
+  },
+  animations: {
+    duration: {
+      fast: 200,
+      normal: 300,
+      slow: 500
+    },
+    easing: {
+      ease_out: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+      ease_in: 'cubic-bezier(0.55, 0.055, 0.675, 0.19)',
+      ease_in_out: 'cubic-bezier(0.645, 0.045, 0.355, 1)'
+    }
+  }
+};
+// Theme hook for easy access
+export const useTheme = (isDark = false) => {
+  const theme = isDark ? 'dark' : 'light';
+  
+  return {
+    colors: THEME_CONFIG.colors[theme],
+    typography: THEME_CONFIG.typography,
+    spacing: THEME_CONFIG.spacing,
+    borderRadius: THEME_CONFIG.border_radius,
+    shadows: THEME_CONFIG.shadows,
+    animations: THEME_CONFIG.animations,
+    isDark
+  };
+};

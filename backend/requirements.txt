@@ -1,0 +1,80 @@
+# FastAPI and ASGI server
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+
+# Database
+sqlalchemy==2.0.23
+alembic==1.12.1
+psycopg2-binary==2.9.9
+
+# Authentication and security
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+
+# Redis for caching and sessions
+redis==5.0.1
+hiredis==2.2.3
+
+# Background tasks
+celery==5.3.4
+flower==2.0.1
+
+# AWS services
+boto3==1.29.7
+botocore==1.32.7
+
+# Video processing
+opencv-python==4.8.1.78
+ffmpeg-python==0.2.0
+pillow==10.1.0
+
+# HTTP client
+httpx==0.25.2
+aiofiles==23.2.1
+
+# WebSocket support
+websockets==12.0
+
+# Monitoring and logging
+structlog==23.2.0
+sentry-sdk[fastapi]==1.38.0
+
+# Development tools
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+black==23.11.0
+flake8==6.1.0
+mypy==1.7.1
+isort==5.12.0
+
+# Email
+emails==0.6
+
+# Environment management
+python-dotenv==1.0.0
+
+# Data validation
+pydantic[email]==2.5.0
+
+# Date/time utilities
+python-dateutil==2.8.2
+pytz==2023.3
+
+# File type detection
+python-magic==0.4.27
+
+# Rate limiting
+slowapi==0.1.9
+
+# Cryptography
+cryptography==41.0.7
+
+# Testing utilities
+factory-boy==3.3.0
+faker==20.1.0
+
+# API documentation
+jinja2==3.1.2

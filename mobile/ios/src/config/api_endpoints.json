@@ -1,0 +1,87 @@
+// mobile/src/config/api_endpoints.js
+export const API_CONFIG = {
+  base_url: process.env.NODE_ENV === 'production' 
+    ? "https://your-api-domain.com/api/v1"
+    : "http://10.0.0.18:8000/api/v1",
+  
+  timeout: 30000, // 30 seconds
+  retry_attempts: 3,
+  
+  endpoints: {
+    auth: {
+      login: "/auth/login",
+      logout: "/auth/logout",
+      register: "/auth/register",
+      refresh: "/auth/refresh",
+      forgot_password: "/auth/forgot-password",
+      reset_password: "/auth/reset-password",
+      biometric_setup: "/auth/biometric",
+      push_token: "/auth/push-token",
+      verify_email: "/auth/verify-email"
+    },
+    users: {
+      profile: "/users/profile",
+      update: "/users/update",
+      upload_avatar: "/users/avatar",
+      list: "/users",
+      search: "/users/search",
+      follow: "/users/{id}/follow",
+      unfollow: "/users/{id}/unfollow",
+      followers: "/users/{id}/followers",
+      following: "/users/{id}/following",
+      delete: "/users/{id}"
+    },
+    games: {
+      create: "/games/create",
+      join: "/games/join",
+      leave: "/games/leave",
+      status: "/games/{id}/status",
+      participants: "/games/{id}/participants",
+      heartbeat: "/games/heartbeat"
+    },
+    videos: {
+      list: "/videos",
+      upload: "/videos/upload",
+      get: "/videos/{id}",
+      update: "/videos/{id}",
+      delete: "/videos/{id}",
+      download: "/videos/{id}/download",
+      thumbnail: "/videos/{id}/thumbnail",
+      process: "/videos/{id}/process",
+      status: "/videos/{id}/status",
+      sync: "/videos/sync",
+      search: "/videos/search",
+      trending: "/videos/trending",
+      recent: "/videos/recent",
+      compile: "/videos/compile"
+    },
+    streaming: {
+      upload: "/stream/upload",
+      status: "/stream/{id}/status",
+      sync_request: "/stream/sync/request",
+      sync_confirm: "/stream/sync/confirm"
+    },
+    arena: {
+      configurations: "/arena/configurations",
+      positions: "/arena/{type}/positions",
+      validate_position: "/arena/validate-position"
+    },
+    storage: {
+      upload_url: "/storage/upload-url",
+      download_url: "/storage/download-url/{id}",
+      delete: "/storage/{id}"
+    }
+  }
+};
+
+// Helper function to build API URLs
+export const buildApiUrl = (endpoint, params = {}) => {
+  let url = API_CONFIG.base_url + endpoint;
+  
+  // Replace path parameters
+  Object.keys(params).forEach(key => {
+    url = url.replace(`{${key}}`, params[key]);
+  });
+  
+  return url;
+};
